@@ -3,12 +3,13 @@ algorithms/simulated_annealing.py
 Stochastic optimization governed by a temperature schedule.
 """
 
+import math
 from typing import Tuple
 from algorithms.base import LocalSearchSolver
 from core.state import State
 from core.problem import CommuteProblem
 from algorithms.operators import get_neighbors
-
+import random
 
 class SimulatedAnnealingSolver(LocalSearchSolver):
     def __init__(self, problem: CommuteProblem, **kwargs):
@@ -33,4 +34,48 @@ class SimulatedAnnealingSolver(LocalSearchSolver):
         - Ignoring the temperature parameter or turning this into pure hill climbing.
         """
         # TODO: Implement Simulated Annealing
-        raise NotImplementedError("Implement solve() in algorithms/simulated_annealing.py")
+        state = self.problem.generate_initial_state()
+        current_cost = self.problem.evaluate(state)
+
+        best_state=state
+        best_cost=current_cost
+        self.history=[best_cost]
+
+        temp=self.initial_temp
+
+        for iteration in range(self.max_iterations):
+            if temp <= self.min_temp:
+                break
+
+            neighbors = get_neighbors(state, self.problem)
+            if len(neighbors) ==0:
+                break
+
+            neighbor_candidate=random.choice(neighbors)
+            next_cost=self.problem.evaluate(neighbor_candidate)
+
+            if next_cost < current_cost:
+                state=neighbor_candidate
+                current_cost=next_cost
+
+            else:
+                
+                delta_E = next_cost - current_cost
+                probability = math.exp(-delta_E / temp)
+
+                if random.random() < probability :
+                    state=neighbor_candidate
+                    current_cost=next_cost
+
+            if current_cost < best_cost:
+                best_state = state
+                best_cost = current_cost
+
+            self.history.append(best_cost)
+
+            temp=temp * self.cooling_rate
+
+        return (best_state, best_cost)
+
+
+       
