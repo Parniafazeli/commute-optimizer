@@ -38,9 +38,43 @@ def get_neighbors(state: State, problem: CommuteProblem) -> List[State]:
     Returns:
         List[State]: A list of valid neighboring State objects.
     """
-    # TODO: Implement neighborhood generation
-    raise NotImplementedError("Implement get_neighbors in algorithms/operators.py")
+    
+    neighbors = []
+    seen=set()
+    # generate neighbors with changing departure time
+    for time in (state.departure_time - problem.t_step, state.departure_time + problem.t_step):
+        if problem.t_min <= time <= problem.t_max:
+            Neighbor_Candidate=State(path=state.path,departure_time=time)
+            if problem.is_valid_state(Neighbor_Candidate):
+                tuple_seen=(Neighbor_Candidate.path,Neighbor_Candidate.departure_time)
+                if tuple_seen not in seen:
+                    neighbors.append(Neighbor_Candidate)
+                    seen.add(tuple_seen)
 
+    # generate neighbors with changing path                
+    path=state.path
+    for i in range( len(path)-1):
+        u=path[i]
+        v=path[i+1]
+
+        for w in problem.network.get_neighbors(u):
+            if w in path:
+                continue
+
+            if not problem.network.has_edge(u,w):
+                continue
+
+            new_path=path[:i+1] + (w,)  + path[i+1:]
+            candidate_neighbors=State(path=new_path, departure_time=state.departure_time)
+            if problem.is_valid_state(candidate_neighbors):
+                tuple_seen=(candidate_neighbors.path,candidate_neighbors.departure_time)
+                if tuple_seen not in seen:
+                    seen.add(tuple_seen)
+                    neighbors.append(candidate_neighbors)
+
+    return neighbors
+            
+    
 
 def crossover(parent1: State, parent2: State, problem: CommuteProblem) -> State:
     """
