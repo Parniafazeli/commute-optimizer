@@ -8,7 +8,7 @@ from algorithms.base import LocalSearchSolver
 from core.state import State
 from core.problem import CommuteProblem
 from algorithms.operators import get_neighbors
-
+import random
 
 class HillClimbingSolver(LocalSearchSolver):
     def __init__(self, problem: CommuteProblem, **kwargs):
@@ -29,5 +29,63 @@ class HillClimbingSolver(LocalSearchSolver):
         Prohibited:
         - Looping indefinitely on flat plateaus.
         """
-        # TODO: Implement Hill Climbing with sideways moves and restarts
-        raise NotImplementedError("Implement solve() in algorithms/hill_climbing.py")
+        best_state=self.problem.generate_initial_state()
+       
+        best_cost=self.problem.evaluate(best_state)
+       
+        self.history = [best_cost]
+
+        for restart in range(self.max_restarts + 1):
+            state=self.problem.generate_initial_state()
+
+            if restart>0:
+                neighbors = get_neighbors(state, self.problem)
+                if len(neighbors)>0:
+                    state = random.choice(neighbors)
+
+            current_cost = self.problem.evaluate(state)
+            if current_cost < best_cost:
+                best_state = state
+                best_cost = current_cost
+
+            self.history.append(best_cost)
+            sideaway=0
+            while True:
+
+                best_neighbor=None
+                minimum_cost=float('inf')
+                neighbors=get_neighbors(state,self.problem)
+
+                for neighbor in neighbors:
+                    cost=self.problem.evaluate(neighbor)
+
+                    if cost < minimum_cost:
+                        minimum_cost=cost
+                        best_neighbor=neighbor
+                        
+
+                if best_neighbor is  None:
+                    break
+
+                if minimum_cost<current_cost:
+                    state=best_neighbor
+                    current_cost=minimum_cost
+                    sideaway=0
+                elif minimum_cost==current_cost:
+                    if sideaway < self.max_sideways:
+                        sideaway+=1
+                        state=best_neighbor
+                    else:
+                        break
+                else:
+                    break
+
+                if current_cost < best_cost:
+                    best_state = state
+                    best_cost = current_cost
+
+                    self.history.append(best_cost)
+        return (best_state,best_cost)
+
+
+
