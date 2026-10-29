@@ -101,4 +101,64 @@ def crossover(parent1: State, parent2: State, problem: CommuteProblem) -> State:
         State: A newly generated child State.
     """
     # TODO: Implement genetic crossover
-    raise NotImplementedError("Implement crossover in algorithms/operators.py")
+    
+    average_departuretime= (parent1.departure_time + parent2.departure_time) /2
+
+    valid_times=problem.get_valid_time_domain()
+    child_departuretime=valid_times[0]
+    closeset_distance=abs(child_departuretime-average_departuretime)
+
+    for time in valid_times:
+
+        distance= abs(time - average_departuretime )
+
+        if distance < closeset_distance :
+            child_departuretime=time
+            closeset_distance=distance
+
+
+    common_nodes=[]
+
+    for node in parent1[1:-1]:
+        if node in parent2[1:-1]:
+            common_nodes.append(node)
+
+    for node in common_nodes:
+        i=parent1.path.index(node)
+        j=parent2.path.index(node)
+
+        child_path=parent1[:i]+parent2[j:]
+
+        child=State(
+            path=child_path,
+            departure_time=child_departuretime
+        )
+
+        if problem.is_valid_state(child):
+            return child
+
+        child_path=parent2[:j]+parent1[i:]
+
+        child=State(
+            path=child_path,
+            departure_time=child_departuretime
+        )
+        if problem.is_valid_state(child):
+            return child
+
+        if problem.is_valid_state(parent1) and problem.is_valid_state(parent2):
+            cost1=problem.evaluate(parent1)
+            cost2=problem.evaluate(parent2)
+
+            if cost1<cost2:
+                return parent1
+            else:
+                return parent2
+        if problem.is_valid_state(parent1):
+            return parent1
+        if problem.is_valid_state(parent2):
+            return parent2
+
+        return problem.generate_initial_state()
+
+
