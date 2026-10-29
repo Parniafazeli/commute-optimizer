@@ -35,4 +35,11 @@ class GeneticAlgorithmSolver(LocalSearchSolver):
         - Experimenting with population size, selection pressure, and operator rates to balance exploration vs. exploitation.
         """
         # TODO: Implement Genetic Algorithm
+
+        population=[]
+
+        for i in range(self.population_size):
+            state=self.problem.generate_initial_state()
+            cost=self.problem.evaluate(state)
+            population.append((state,cost))
         raise NotImplementedError("Implement solve() in algorithms/genetic_algorithm.py")
