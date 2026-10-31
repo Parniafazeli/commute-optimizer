@@ -33,7 +33,7 @@ class LocalBeamSearchSolver(LocalSearchSolver):
         Prohibited:
         - Treating this as K independent, non-communicating searches.
         """
-        
+
 
         beam_states=[]
         for _ in range(self.beam_width):
@@ -71,6 +71,7 @@ class LocalBeamSearchSolver(LocalSearchSolver):
 
                     best_state=best_state_cuurent
                     best_cost=best_cost_current
+                    self.history.append(best_cost)
 
                 else:
                     break
