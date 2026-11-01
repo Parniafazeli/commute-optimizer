@@ -63,9 +63,51 @@ def get_neighbors(state: State, problem: CommuteProblem) -> List[State]:
 
             if not problem.network.has_edge(u,w):
                 continue
+            if not problem.network.has_edge(w, v):
+                continue
 
             new_path=path[:i+1] + (w,)  + path[i+1:]
             candidate_neighbors=State(path=new_path, departure_time=state.departure_time)
+            if problem.is_valid_state(candidate_neighbors):
+                tuple_seen=(candidate_neighbors.path,candidate_neighbors.departure_time)
+                if tuple_seen not in seen:
+                    seen.add(tuple_seen)
+                    neighbors.append(candidate_neighbors)
+
+    for i in range(1, len(path) - 1):
+
+        u = path[i - 1]
+        v = path[i + 1]
+
+        if problem.network.has_edge(u, v):
+
+            new_path = path[:i] + path[i + 1:]
+            candidate_neighbors=State(path=new_path, departure_time=state.departure_time)
+            if problem.is_valid_state(candidate_neighbors):
+                tuple_seen=(candidate_neighbors.path,candidate_neighbors.departure_time)
+                if tuple_seen not in seen:
+                    seen.add(tuple_seen)
+                    neighbors.append(candidate_neighbors)
+
+    for i in range(1, len(path) - 1):
+
+        previous_node = path[i - 1]
+        next_node = path[i + 1]
+
+        for w in problem.network.get_neighbors(previous_node):
+
+            if w in path:
+                continue
+
+            if not problem.network.has_edge(w, next_node):
+                continue
+
+            new_path = path[:i] + (w,) + path[i + 1:]
+
+            candidate_neighbors = State(
+                path=new_path,
+                departure_time=state.departure_time
+            )
             if problem.is_valid_state(candidate_neighbors):
                 tuple_seen=(candidate_neighbors.path,candidate_neighbors.departure_time)
                 if tuple_seen not in seen:
@@ -119,15 +161,15 @@ def crossover(parent1: State, parent2: State, problem: CommuteProblem) -> State:
 
     common_nodes=[]
 
-    for node in parent1[1:-1]:
-        if node in parent2[1:-1]:
+    for node in parent1.path[1:-1]:
+        if node in parent2.path[1:-1]:
             common_nodes.append(node)
 
     for node in common_nodes:
         i=parent1.path.index(node)
         j=parent2.path.index(node)
 
-        child_path=parent1[:i]+parent2[j:]
+        child_path=parent1.path[:i]+parent2.path[j:]
 
         child=State(
             path=child_path,
@@ -137,7 +179,7 @@ def crossover(parent1: State, parent2: State, problem: CommuteProblem) -> State:
         if problem.is_valid_state(child):
             return child
 
-        child_path=parent2[:j]+parent1[i:]
+        child_path=parent2.path[:j]+parent1.path[i:]
 
         child=State(
             path=child_path,
@@ -146,19 +188,19 @@ def crossover(parent1: State, parent2: State, problem: CommuteProblem) -> State:
         if problem.is_valid_state(child):
             return child
 
-        if problem.is_valid_state(parent1) and problem.is_valid_state(parent2):
-            cost1=problem.evaluate(parent1)
-            cost2=problem.evaluate(parent2)
+    if problem.is_valid_state(parent1) and problem.is_valid_state(parent2):
+        cost1=problem.evaluate(parent1)
+        cost2=problem.evaluate(parent2)
 
-            if cost1<cost2:
-                return parent1
-            else:
-                return parent2
-        if problem.is_valid_state(parent1):
+        if cost1<cost2:
             return parent1
-        if problem.is_valid_state(parent2):
+        else:
             return parent2
+    if problem.is_valid_state(parent1):
+        return parent1
+    if problem.is_valid_state(parent2):
+        return parent2
 
-        return problem.generate_initial_state()
+    return problem.generate_initial_state()
 
 
