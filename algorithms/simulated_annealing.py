@@ -18,6 +18,8 @@ class SimulatedAnnealingSolver(LocalSearchSolver):
         self.cooling_rate: float = self.params.get("cooling_rate", 0.995)
         self.min_temp: float = self.params.get("min_temp", 1e-3)
         self.max_iterations: int = self.params.get("max_iterations", 2000)
+        self.patience=  self.params.get("patience", 300)
+        self.min_improvement = self.params.get("min_improvement", 0.1)
 
     def solve(self) -> Tuple[State, float]:
         """
@@ -43,6 +45,8 @@ class SimulatedAnnealingSolver(LocalSearchSolver):
         self.history=[best_cost]
 
         temp=self.initial_temp
+        no_improvement_count = 0
+        last_best_cost = best_cost
 
         for iteration in range(self.max_iterations):
             
@@ -70,7 +74,16 @@ class SimulatedAnnealingSolver(LocalSearchSolver):
                 best_state = state
                 best_cost = current_cost
 
+            if last_best_cost - best_cost >= self.min_improvement:
+                last_best_cost = best_cost
+                no_improvement_count = 0
+            else:
+                no_improvement_count += 1
+
             self.history.append(best_cost)
+
+            if no_improvement_count >= self.patience:
+                break
 
             temp=temp * self.cooling_rate
 
