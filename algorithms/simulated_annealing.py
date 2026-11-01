@@ -34,6 +34,7 @@ class SimulatedAnnealingSolver(LocalSearchSolver):
         - Ignoring the temperature parameter or turning this into pure hill climbing.
         """
         # TODO: Implement Simulated Annealing
+        
         state = self.problem.generate_initial_state()
         current_cost = self.problem.evaluate(state)
 
@@ -44,9 +45,7 @@ class SimulatedAnnealingSolver(LocalSearchSolver):
         temp=self.initial_temp
 
         for iteration in range(self.max_iterations):
-            if temp <= self.min_temp:
-                break
-
+            
             neighbors = get_neighbors(state, self.problem)
             if len(neighbors) ==0:
                 break
@@ -58,7 +57,7 @@ class SimulatedAnnealingSolver(LocalSearchSolver):
                 state=neighbor_candidate
                 current_cost=next_cost
 
-            else:
+            elif temp > self.min_temp:
                 
                 delta_E = next_cost - current_cost
                 probability = math.exp(-delta_E / temp)
