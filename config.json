@@ -14,7 +14,9 @@
     "initial_temp": 120.0,
     "cooling_rate": 0.992,
     "min_temp": 0.001,
-    "max_iterations": 3000
+    "max_iterations": 3000,
+    "patience": 300,
+    "min_improvement": 0.1
   },
   "beam_search": {
     "beam_width": 8,
@@ -22,7 +24,7 @@
   },
   "genetic_algorithm": {
     "population_size": 50,
-    "generations": 120,
+    "generations": 100,
     "crossover_rate": 0.85,
     "mutation_rate": 0.25,
     "elitism": 3
